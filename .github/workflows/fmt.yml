@@ -1,0 +1,26 @@
+# Put this in your repos .github/workflows/fmt.yml
+name: "Check formatting"
+on:
+  pull_request:
+  push:
+
+permissions: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: cachix/install-nix-action@v30
+      with:
+        # Revision from nixpkgs-unstable: https://status.nixos.org/
+        # Important to not change over time, so that CI won't
+        # suddenly start failing once the formatter version is updated!
+        nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/2d068ae5c6516b2d04562de50a58c682540de9bf.tar.gz
+    - name: Install nixfmt
+      run: nix-env -f '<nixpkgs>' -iA nixfmt
+    - name: Run treefmt
+      uses: isbecker/treefmt-action@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        ci: true
